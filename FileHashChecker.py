@@ -59,3 +59,5 @@ if __name__ == "__main__":
         print("Argv Error")
     else:
         calculate_hashes(sys.argv[1], sys.argv[2])
+        
+        print('test')
