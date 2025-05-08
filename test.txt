@@ -1,5 +1,13 @@
-FileHashChecker.py
-md5 : 82dc1931568a9dca8d19f79d24dfea71
+usage: FileHashChecker.py [-h] [-c CHECK] [-a ALGORITHM] [-o OUTPUT] [--list-algorithms] [file_path]
 
-README.md
-md5 : ff804120a6bf988f745e861c13fb138b
+해시값 취득 프로그램
+
+positional arguments:
+  file_path             해시값 취득할 파일 경로
+
+options:
+  -h, --help            show this help message and exit
+  -c, --check CHECK     지정 파일과 입력한 해시값을 비교
+  -a, --algorithm ALGORITHM
+                        선택적 해시 알고리즘 (예: sha256)
+  -o, --output OUTPUT   결과를 저장할 파일 경로(.TXT, .CSV, .JSON, .MD 등)

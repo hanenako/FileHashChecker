@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description="해시값 취득 프로그램")
 parser.add_argument("file_path", nargs="?", help="해시값 취득할 파일 경로")  # --list만 사용할 때를 위해 text도 optional로 처리
 parser.add_argument("-c", "--check", help="지정 파일과 입력한 해시값을 비교", default=None)
 parser.add_argument("-a", "--algorithm", help="선택적 해시 알고리즘 (예: sha256)", default=None)
-parser.add_argument("-o", "--output", help="결과를 저장할 파일 경로(.TXT, .CSV, .JSON, .MB 등)", default=None)
+parser.add_argument("-o", "--output", help="결과를 저장할 파일 경로(.TXT, .CSV, .JSON, .MD 등(아직 txt 이외 미지원))", default=None)
 parser.add_argument("--list-algorithms", action="store_true", help="사용 가능한 해시 알고리즘 목록 출력")
 
 args = parser.parse_args()
