@@ -1,3 +1,5 @@
+20250509 0700
+
 FileHashChecker By Python
 
 usage: FileHashChecker.py [-h] [-a ALGORITHM] [-o OUTPUT] [--list-algorithms] [file_path]
