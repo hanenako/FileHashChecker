@@ -2,7 +2,17 @@ import hashlib  # 해쉬값 계산을 위한 라이브러리 import
 import argparse # 인자 처리용 라이브러리
 import sys  # 
 import os   # 디렉토리 읽어오기용 라이브러리
+import csv  # csv 파일 처리
+import json # json 파일 처리
 from collections import defaultdict
+
+# all_hashes
+# { "ALGORITHM" : { "FILENAME" : "HASHVALUE" } }
+# { "SHA256" : { "test.txt" : "asd1231dax12334e" } }
+
+# file_based_result
+# { "FILENAME" : { "ALGORITHM" : "HASHVALUE"} }
+# { "test.txt" : { "SHA256" : "asd1231dax12334e" } }
 
 
 # argparse 설정
@@ -79,6 +89,7 @@ def calculate_hashes(file_path, algo):
         print("다음 중에서 선택하세요:")
         print(", ".join(default_algorithms))
         sys.exit(1)
+        
     except Exception as e:
         print(f"Error : {e}")
         
@@ -135,8 +146,40 @@ else:
 # 결과를 파일로 출력(-o, --output)
 if args.output:
     try:
-        with open(args.output, "w", encoding='utf-8') as f:
-            f.write('\n'.join(final_results))
-        print(f"\n 결과가 파일에 저장됨: {args.output}")
+        # csv파일 출력
+        if args.output.lower().endswith('.csv'):
+            with open(args.output, "w", newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["FileName", "Algorithm", "HashValue"])
+                for fname, hash_dict in sorted(file_based_result.items()):
+                    for algo, hval in hash_dict.items():
+                        writer.writerow([fname, algo, hval])
+            print(f"\n결과가 파일에 저장됨: {args.output}")
+            
+        # json 파일 출력
+        elif args.output.lower().endswith('.json'):
+            with open(args.output, "w", encoding='utf-8') as f:
+                json.dump(file_based_result, f, ensure_ascii=False, indent=4)
+            print(f"\n결과가 파일에 저장됨: {args.output}")
+        
+        # md 파일 출력    
+        elif args.output.endswith('.md'):
+            with open(args.output, "w", encoding='utf-8') as f:
+                f.write("# 해시값 검사 결과\n\n")
+                f.write("| FileName | Algorithm | HashValue |\n")
+                f.write("|----------|-----------|-----------|\n")
+                for fname in sorted(file_based_result):
+                    for algo in sorted(file_based_result[fname]):
+                        hash_value = file_based_result[fname][algo]
+                        f.write(f"| {fname} | {algo.upper()} | `{hash_value}` |\n")
+            print(f"\n결과가 파일에 저장됨: {args.output}")
+                
+                            
+        # 그 외 파일 처리
+        else:
+            with open(args.output, "w", encoding='utf-8') as f:
+                f.write('\n'.join(final_results))
+            print(f"\n결과가 파일에 저장됨: {args.output}")   
+
     except Exception as e:
         print(f"[오류] 파일 저장 실패: {e}")
