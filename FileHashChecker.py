@@ -119,7 +119,8 @@ for algo, hash_dict in all_hashes.items():
         
 final_results = []
 for fname in sorted(file_based_result):
-    final_results.append(fname)
+    final_results.append(f"FileName: {fname}")
+    final_results.append(f"FileSize: {os.path.getsize(fname) / 1024:.2f}kb")
     for algo in sorted(file_based_result[fname]):
         final_results.append(f"{algo} : {file_based_result[fname][algo]}")
     final_results.append("")  # 줄 바꿈
