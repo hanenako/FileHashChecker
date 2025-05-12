@@ -21,8 +21,9 @@ parser = argparse.ArgumentParser(description="해시값 취득 프로그램")
 # 기본 인자들
 parser.add_argument("file_path", nargs="?", help="해시값 취득할 파일 경로")  # --list만 사용할 때를 위해 text도 optional로 처리
 parser.add_argument("-c", "--check", help="지정 파일과 입력한 해시값을 비교", default=None)
+#parser.add_argument("-f", "--check-file", nargs="*", help="지정 파일 여러개의 해시값을 비교하여 동일 파일인지 확인", default=None, dest="check_file")
 parser.add_argument("-a", "--algorithm", help="선택적 해시 알고리즘 (예: sha256)", default=None)
-parser.add_argument("-o", "--output", help="결과를 저장할 파일 경로(.TXT, .CSV, .JSON, .MD 등(아직 txt 이외 미지원))", default=None)
+parser.add_argument("-o", "--output", help="결과를 저장할 파일 경로(.TXT, .CSV, .JSON, .MD 등)", default=None)
 parser.add_argument("--list-algorithms", action="store_true", help="사용 가능한 해시 알고리즘 목록 출력")
 parser.add_argument("-r", "--recursive", action="store_true", help="하위 디렉토리, 파일의 해쉬값을 취득", default=None)
             
@@ -30,8 +31,9 @@ args = parser.parse_args()
 
 # 알고리즘 리스트(--list-algorithms)
 available_algorithms = sorted(hashlib.algorithms_available)
-default_algorithms = ['md5', 'sha1', 'sha256', 'sha512']
 
+# 프로그램상 기본 알고리즘 리스트
+default_algorithms = ['md5', 'sha1', 'sha256', 'sha512']
 
 if args.list_algorithms:
     print('사용 가능한 해시 알고리즘 목록:')
@@ -119,8 +121,12 @@ for algo, hash_dict in all_hashes.items():
         
 final_results = []
 for fname in sorted(file_based_result):
+    full_path = os.path.join(args.file_path, fname) if os.path.isdir(args.file_path) else fname
+    size_kb = os.path.getsize(full_path) / 1024
+    
     final_results.append(f"FileName: {fname}")
-    final_results.append(f"FileSize: {os.path.getsize(fname) / 1024:.2f}kb")
+    final_results.append(f"FileSize: {size_kb:.2f} KB")
+    
     for algo in sorted(file_based_result[fname]):
         final_results.append(f"{algo} : {file_based_result[fname][algo]}")
     final_results.append("")  # 줄 바꿈
