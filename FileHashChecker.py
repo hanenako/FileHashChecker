@@ -14,7 +14,8 @@ parser.add_argument("-c", "--check", help="지정 파일과 입력한 해시값�
 parser.add_argument("-a", "--algorithm", help="선택적 해시 알고리즘 (예: sha256)", default=None)
 parser.add_argument("-o", "--output", help="결과를 저장할 파일 경로(.TXT, .CSV, .JSON, .MD 등(아직 txt 이외 미지원))", default=None)
 parser.add_argument("--list-algorithms", action="store_true", help="사용 가능한 해시 알고리즘 목록 출력")
-
+parser.add_argument("-r", "--recursive", action="store_true", help="하위 디렉토리, 파일의 해쉬값을 취득", default=None)
+            
 args = parser.parse_args()
 
 # 알고리즘 리스트(--list-algorithms)
@@ -37,25 +38,42 @@ if not args.file_path:
 def calculate_hashes(file_path, algo):
     result = {}
     try:
-        if not os.path.isfile(file_path):   # 디렉토리를 입력받았을 경우
-            file_list = os.listdir(file_path)
-            for file in file_list:
-                full_path = os.path.join(file_path, file)
-                if os.path.isfile(full_path):
-                    result_hash = hashlib.new(algo) # algo 알고리즘 개체 생성
-                    with open(full_path, "rb") as f:    # file_path를 읽기 전용으로 오픈
-                        for chunk in iter(lambda: f.read(4096), b""):
-                            result_hash.update(chunk)  # 4096b 만큼 읽어온 chunk로 업데이트
-                    result[file] = result_hash.hexdigest()
-                    # return result_hash.hexdigest()
-        else:
-            result_hash = hashlib.new(algo) # algo 알고리즘 개체 생성
-            with open(file_path, "rb") as f:    # file_path를 읽기 전용으로 오픈
+        if os.path.isfile(file_path):
+            # 파일 1개 처리
+            result_hash = hashlib.new(algo)
+            with open(file_path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
-                    result_hash.update(chunk)  # 4096b 만큼 읽어온 chunk로 업데이트
+                    result_hash.update(chunk)
             result[os.path.basename(file_path)] = result_hash.hexdigest()
 
+        else:
+            # 디렉토리 처리
+            if args.recursive:
+                # 하위 디렉토리까지 탐색
+                for root, dirs, files in os.walk(file_path):
+                    for file in files:
+                        full_path = os.path.join(root, file)
+                        if os.path.isfile(full_path):
+                            result_hash = hashlib.new(algo)
+                            with open(full_path, "rb") as f:
+                                for chunk in iter(lambda: f.read(4096), b""):
+                                    result_hash.update(chunk)
+                            # 기준 디렉토리 기준 상대 경로
+                            relative_path = os.path.relpath(full_path, file_path)
+                            result[relative_path] = result_hash.hexdigest()
+            else:
+                # 현재 디렉토리의 파일만 처리
+                for file in os.listdir(file_path):
+                    full_path = os.path.join(file_path, file)
+                    if os.path.isfile(full_path):
+                        result_hash = hashlib.new(algo)
+                        with open(full_path, "rb") as f:
+                            for chunk in iter(lambda: f.read(4096), b""):
+                                result_hash.update(chunk)
+                        result[file] = result_hash.hexdigest()
+
         return result
+    
     except ValueError:
         print(f"[오류] 지원되지 않는 알고리즘: {algo}")
         print("다음 중에서 선택하세요:")
