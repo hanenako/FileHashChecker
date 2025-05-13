@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description="해시값 취득 프로그램")
 # 기본 인자들
 parser.add_argument("file_path", nargs="?", help="해시값 취득할 파일 경로")  # --list만 사용할 때를 위해 text도 optional로 처리
 parser.add_argument("-c", "--check", help="지정 파일과 입력한 해시값을 비교", default=None)
-#parser.add_argument("-f", "--check-file", nargs="*", help="지정 파일 여러개의 해시값을 비교하여 동일 파일인지 확인", default=None, dest="check_file")
+parser.add_argument("-f", "--check-file", nargs="*", help="지정 파일 여러개의 해시값을 비교하여 동일 파일인지 확인", default=None, dest="check_file")
 parser.add_argument("-a", "--algorithm", help="선택적 해시 알고리즘 (예: sha256)", default=None)
 parser.add_argument("-o", "--output", help="결과를 저장할 파일 경로(.TXT, .CSV, .JSON, .MD 등)", default=None)
 parser.add_argument("--list-algorithms", action="store_true", help="사용 가능한 해시 알고리즘 목록 출력")
@@ -41,7 +41,7 @@ if args.list_algorithms:
         print(f'- {algo}')
     sys.exit(0)
     
-if not args.file_path:
+if args.file_path is None and (not args.check_file or len(args.check_file) == 0):
     print('[오류] 파일을 지정하세요')
     parser.print_help()
     sys.exit(1)
@@ -142,7 +142,36 @@ if args.check:
         print("[불일치] 일치하는 해시값이 없습니다.")
     sys.exit(0)
     
-
+if args.check_file:
+    check_file_hashes = {}
+    for path in args.check_file:
+        if not os.path.isfile(path):
+            print(f"[오류] 파일이 존재하지 않습니다: {path}")
+            continue
+        try:
+            if args.algorithm:
+                check_algo = args.algorithm
+            else:
+                check_algo = "sha256"
+            result_hash = hashlib.new(args.algorithm if args.algorithm else "sha256")
+            with open(path, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    result_hash.update(chunk)
+            check_file_hashes[os.path.basename(path)] = result_hash.hexdigest()
+            
+        except Exception as e:
+            print(f"[오류] 파일 비교 실패: {path} -> {e}")
+            
+    print(f"\n[check file result] : {check_algo}")
+    for fname, hval in check_file_hashes.items():
+        print(f"{fname}: {hval}")
+        
+    if(len(set(check_file_hashes.values()))) == 1:
+        print("모든 파일의 해쉬 값이 동일합니다.")
+    else:
+        print("파일의 해시값이 동일하지 않습니다.")      
+    sys.exit(0)
+    
 #콘솔 출력
 if final_results:
     for line in final_results:
