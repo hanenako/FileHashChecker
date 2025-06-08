@@ -1,6 +1,6 @@
 import hashlib  # 해쉬값 계산을 위한 라이브러리 import
 import argparse # 인자 처리용 라이브러리
-import sys  # 
+import sys  # sys
 import os   # 디렉토리 읽어오기용 라이브러리
 import csv  # csv 파일 처리
 import json # json 파일 처리
