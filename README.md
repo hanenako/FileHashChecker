@@ -49,6 +49,7 @@
 git clone https://github.com/yourusername/FileHashChecker.git
 cd FileHashChecker
 pip install -r requirements.txt
+```
 
 🚀 Usage
 Basic usage:
